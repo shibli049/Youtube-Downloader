@@ -19,7 +19,8 @@ logging.basicConfig(level=logging.INFO,
 app = Flask(__name__)
 app.debug = False
 app.config.from_object(__name__)
-TOKEN = int(os.environ.get('TOKEN', 'Test1234'))
+TOKEN = str(os.environ.get('TOKEN', 'Test1234'))
+print("TOKEN:", TOKEN)
 
 def generate_youtube_link(passed_url):
     url=passed_url
@@ -44,14 +45,14 @@ def generate_youtube_link(passed_url):
     str_output=str_output+view_count+", "+duration+", "+like+", "+dislike+", "+rating
     str_output=str_output+description+"</div></div></div>"
 
-    my_str="<table class='table table-hover table-bordered table-striped'><tr><th>RESOLUTION</th><th>EXTENSION</th><th>FILESIZE</th><th>URL</th></tr>"
+    my_str="<h1>Video Links</h1><table class='table table-hover table-bordered table-striped'><tr><th>RESOLUTION</th><th>EXTENSION</th><th>FILESIZE</th><th>URL</th></tr>"
     streams=video.streams
     for s in streams:
         my_str=my_str+"<tr><td>"+s.resolution+"</td><td>"+s.extension+"</td><td>"+str(s.get_filesize()/1000)+" KB</td><td><a download href="+s.url+">Download link</a></td></tr>"
 
     str_output=str_output+my_str+"</table>"
 
-    my_aud_str="<hr/><table class='table table-hover table-bordered table-striped'><tr><th>BITRATE</th><th>EXTENSION</th><th>FILESIZE</th><th>URL</th></tr>"
+    my_aud_str="<hr/><h1>Audio Links</h1><table class='table table-hover table-bordered table-striped'><tr><th>BITRATE</th><th>EXTENSION</th><th>FILESIZE</th><th>URL</th></tr>"
     streams=video.audiostreams
     for s in streams:
         my_aud_str=my_aud_str+"<tr><td>"+s.bitrate+"</td><td>"+s.extension+"</td><td>"+str(s.get_filesize()/1000)+" KB</td><td><a download href="+s.url+">Download link</a></td></tr>"
@@ -82,7 +83,7 @@ def index():
         			  border-radius: 4px;
         			}
                     #youtube_link{
-                      width:752px;
+                      width:550px;
                     }
         		</style>
         	</head>
@@ -96,21 +97,26 @@ def index():
         '''
         str_form='''
     			<form class="form-inline" action="/" method="GET">
-    			  <div class="form-group">
-    			    <label class="sr-only" for="youtube_link">Paste YouTube link: </label>
-    			    <div class="input-group">
-    			      <div class="input-group-addon">Paste YouTube link: </div>
-    			      <input name="youtubelink" type="text" class="form-control" id="youtube_link" placeholder="Paste YouTube link Here. Ex: https://www.youtube.com/watch?v=P9VLkrJcwY4">
-    			    </div>
-    			  </div>
-    			  <button type="submit" class="btn btn-info" name="savebtn" value="savebtn">Get Download Links</button>
-                  <button onclick="window.location = window.location.pathname" type="button" class="btn btn-default"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span></button>
-    			</form>
+                    <label class="sr-only" for="youtube_link">YouTube Link:</label>
+                    <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                        <div class="input-group-addon">YouTube Link:</div>
+                        <input name="youtubelink" type="text" class="form-control" id="youtube_link" placeholder="Paste YouTube link Here.">
+                    </div>
+                    <label class="sr-only" for="token">Token</label>
+                    <div class="input-group mb-2 mr-sm-2 mb-sm-0">
+                        <div class="input-group-addon">Token:</div>
+                        <input type="text" class="form-control" id="token" name="token" placeholder="Your DL Token">
+                    </div>
+                    <button type="submit" class="btn btn-info" value="savebtn" name="savebtn" >Download Links</button>
+                    <button onclick="window.location = window.location.pathname" type="button" class="btn btn-default"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span></button>
+                </form>
         ''';
+        # print("werwer" , request.args)
         if request.args.get('savebtn','').strip():
             youtubelink = request.args.get('youtubelink', '').strip()
             token = request.args.get('token', '').strip()
-            if(token == TOKEN):
+            # print(token, TOKEN)
+            if(token != TOKEN):
                 return render_template_string(str_header+str_form+str_footer)
             returned_str=generate_youtube_link(youtubelink)
             show_str=str_header+str_form+returned_str+str_footer
